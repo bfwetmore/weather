@@ -1,0 +1,27 @@
+{
+  "name": "weather",
+  "version": "1.0.0",
+  "description": "Weather Application",
+  "main": "app.js",
+  "scripts": {
+    "test": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bfwetmore/node-lesson.git"
+  },
+  "keywords": [
+    "weather"
+  ],
+  "author": "Benjamin Wetmore",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bfwetmore/node-lesson/issues"
+  },
+  "homepage": "https://github.com/bfwetmore/node-lesson#readme",
+  "dependencies": {
+    "axios": "^0.26.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {}
+}
