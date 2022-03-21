@@ -5,17 +5,31 @@ dotenv.config();
 const apiURLPrefix = "http://api.openweathermap.org/";
 
 /**
- * Runs a conditional to distinguish if Zipcode or address string was entered.
+ * Get weather data based on whether Zipcode or address string was entered.
  * @param {string|number}input
  * @returns {Promise<void>}
  */
 async function getWeather(input) {
-    if (isNaN(input)) {
-        const data = await getCoordinates(input);
-        await getWeatherData(`lat=${data[0]["lat"]}&lon=${data[0]["lon"]}`);
-        return;
+    try {
+        formatCheck(input);
+        if (isNaN(input)) {
+            const data = await getCoordinates(input);
+            return printWeather(await getWeatherData(`lat=${data[0]["lat"]}&lon=${data[0]["lon"]}`));
+        }
+        printWeather(await getWeatherData(`zip=${input}`));
+    } catch (error) {
+        console.log(customErrorHandler(error));
     }
-    await getWeatherData(`zip=${input}`);
+}
+
+/**
+ * Checks user input format
+ * @param {string|number}input
+ */
+function formatCheck(input) {
+    if (input.indexOf(',') >= 2) {
+        throw 'format error';
+    }
 }
 
 /**
@@ -25,11 +39,11 @@ async function getWeather(input) {
  */
 async function getCoordinates(input) {
     const geoURL = `${apiURLPrefix}geo/1.0/direct?q=${input},us&appid=${process.env.W_API}`;
-    let data = await buildResponseBody(geoURL);
-    if (data.length === 0) {
-        return console.error(`${input} is not a valid location, please try again.`);
+    try {
+        return await buildResponseBody(geoURL);
+    } catch (error) {
+        throw 'location error';
     }
-    return data;
 }
 
 /**
@@ -39,8 +53,7 @@ async function getCoordinates(input) {
  */
 async function getWeatherData(input) {
     let url = `${apiURLPrefix}data/2.5/weather?${input}&units=imperial&appid=${process.env.W_API}`;
-    const weatherJSON = await buildResponseBody(url);
-    printWeather(weatherJSON);
+    return await buildResponseBody(url);
 }
 
 /**
@@ -51,12 +64,14 @@ async function getWeatherData(input) {
 async function buildResponseBody(url) {
     let responseBody = "";
     try {
-        const request = await axios.get(url);
-        responseBody = request.data;
+        responseBody = await axios.get(url);
     } catch (error) {
-        console.error('There was an error with you entry, please see the "README" file to see correct formatting.');
+        return error;
     }
-    return responseBody;
+    if (responseBody.data.length === 0) {
+        throw 'error';
+    }
+    return responseBody.data;
 }
 
 /**
@@ -65,6 +80,20 @@ async function buildResponseBody(url) {
  */
 function printWeather(data) {
     console.log(`The current Temperature in ${data.name} is ${data.main.temp} \u00B0F. It is ${data.weather[0].main.toLowerCase()} outside, with a forecasted high of ${data.main.temp_max}`);
+}
+
+/**
+ * Customized error handler, either returns a couple typical issues messages or returns any unique issues.
+ * @param {object}error
+ * @returns {string}
+ */
+function customErrorHandler(error) {
+    if (error === "location error") {
+        return "Not a valid location";
+    } else if (error === 'format error') {
+        return 'There was an error with you entry, please see the "README" file to see correct formatting.';
+    }
+    return error.message;
 }
 
 module.exports = {getWeather};

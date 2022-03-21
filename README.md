@@ -2,10 +2,11 @@
 
 A weather application to demonstrate API calls and Manipulation.
 
-## Install (MAC)
+## Install
 
 * Download this "weather" project file
 * In terminal, navigate to your weather file.
+* Run ``npm install``
 * Open example.env and follow the directions there.
 * Enjoy!
 
